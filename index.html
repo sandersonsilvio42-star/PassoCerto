@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0F172A" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="PassoCerto" />
+  <title>PassoCerto • Inteligência em Calçados & Saúde</title>
+
+  <!-- Manifest embutido para instalação PWA no celular -->
+  <link rel="manifest" href='data:application/manifest+json,{"name":"PassoCerto","short_name":"PassoCerto","start_url":".","display":"standalone","background_color":"#F8FAFC","theme_color":"#0F172A","icons":[{"src":"https://flaticon.com","sizes":"512x512","type":"image/png"}]}' />
+
+  <!-- Fonte moderna e limpa -->
+  <link rel="preconnect" href="https://googleapis.com" />
+  <link rel="preconnect" href="https://gstatic.com" crossorigin />
+  <link href="https://googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg-main: #F8FAFC;
+      --bg-card: #FFFFFF;
+      --bg-subtle: #F1F5F9;
+      --primary: #0F172A;
+      --primary-soft: #1E293B;
+      --accent: #10B981;
+      --accent-dark: #059669;
+      --accent-soft: #ECFDF5;
+      --text-main: #0F172A;
+      --text-muted: #64748B;
+      --border: #E2E8F0;
+      --warn-bg: #FFFBEB;
+      --warn-text: #B45309;
+      --danger-bg: #FEF2F2;
+      --danger-text: #B91C1C;
+      --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.04);
+      --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #E2E8F0;
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    /* Container mobile-first: ocupa 100% no celular e simula tela de app no PC */
+    .app-shell {
+      width: 100%;
+      max-width: 480px;
+      min-height: 100vh;
+      background-color: var(--bg-main);
+      position: relative;
+      padding-bottom: 92px;
+      box-shadow: 0 0 40px rgba(15, 23, 42, 0.12);
+      overflow-x: hidden;
+    }
+
+    /* Cabeçalho Premium */
+    .app-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-soft) 100%);
+      color: #FFFFFF;
+      padding: 20px 20px 26px;
+      border-bottom-left-radius: 26px;
+      border-bottom-right-radius: 26px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      box-shadow: var(--shadow-md);
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--accent);
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+    }
+
+    .brand-text h1 {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+    }
+
+    .brand-text span {
+      font-size: 11px;
+      color: #94A3B8;
+      display: block;
+      margin-top: 1px;
+    }
+
+    .api-btn {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #FFFFFF;
+      padding: 7px 12px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: 0.2s;
+    }
+
+    .api-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #EF4444;
+    }
+
+    .api-dot.active {
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+    }
+
+    /* Barra de Busca */
+    .search-box {
+      display: flex;
+      gap: 8px;
+      background: #FFFFFF;
+      padding: 6px;
+      border-radius: 16px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+    }
+
+    .search-box input {
+      flex: 1;
+      border: none;
+      outline: none;
+      padding: 10px 12px;
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--text-main);
+      background: transparent;
+    }
+
+    .search-box input::placeholder {
+      color: #94A3B8;
+    }
+
+    .search-btn {
+      background: var(--accent);
+      color: #FFFFFF;
+      border: none;
+      border-radius: 12px;
+      padding: 0 16px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .search-btn:active {
+      transform: scale(0.96);
+    }
+    /* Conteúdo Principal e Abas */
+    .content-area {
+      padding: 18px 16px;
+    }
+
+    .tab-section {
+      display: none;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .tab-section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Banner Hero & Atalhos */
+    .hero-card {
+      background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
+      border: 1px solid #A7F3D0;
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      margin-bottom: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .hero-card h2 {
+      font-size: 16px;
+      font-weight: 800;
+      color: #064E3B;
+      margin-bottom: 4px;
+    }
+
+    .hero-card p {
+      font-size: 12px;
+      color: #047857;
+      line-height: 1.4;
+      margin-bottom: 10px;
+    }
+
+    .hero-cta {
+      background: #064E3B;
+      color: #FFFFFF;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .hero-emoji {
+      font-size: 42px;
+    }
+
+    /* Espaço Ilustrativo de Parceiros */
+    .ad-slot {
+      background: #FFFFFF;
+      border: 1px dashed #CBD5E1;
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      margin: 16px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .ad-badge {
+      background: #F1F5F9;
+      color: #64748B;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 3px 6px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .ad-info h4 {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-top: 3px;
+    }
+
+    .ad-info p {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .ad-link {
+      background: var(--primary);
+      color: #FFFFFF;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 7px 11px;
+      border-radius: 8px;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    /* Chips de Buscas Rápidas */
+    .section-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .chips-row {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 14px;
+      scrollbar-width: none;
+    }
+
+    .chips-row::-webkit-scrollbar {
+      display: none;
+    }
+
+    .chip {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 8px 14px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .chip:hover, .chip.active {
+      background: var(--primary);
+      color: #FFFFFF;
+      border-color: var(--primary);
+    }
+
+    /* Cartão de Resultado / Ficha Técnica de Saúde */
+    .result-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      padding: 18px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 16px;
+    }
+
+    .shoe-header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 14px;
+      margin-bottom: 14px;
+    }
+
+    .shoe-brand-tag {
+      display: inline-block;
+      background: var(--accent-soft);
+      color: var(--accent-dark);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 99px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .shoe-header h2 {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.2;
+    }
+
+    .shoe-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Bloco de Saúde & Impacto */
+    .health-box {
+      background: #F8FAFC;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .health-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .health-header span {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .health-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 99px;
+    }
+
+    .badge-good { background: var(--accent-soft); color: var(--accent-dark); }
+    .badge-warn { background: var(--warn-bg); color: var(--warn-text); }
+    .badge-bad  { background: var(--danger-bg); color: var(--danger-text); }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .metric-item {
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      padding: 9px 10px;
+      border-radius: 10px;
+    }
+
+    .metric-item small {
+      display: block;
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .metric-item strong {
+      font-size: 12px;
+      color: var(--text-main);
+      font-weight: 700;
+    }
+
+    .health-verdict {
+      font-size: 12px;
+      line-height: 1.5;
+      color: #334155;
+      background: #FFFFFF;
+      padding: 10px;
+      border-radius: 10px;
+      border-left: 3px solid var(--accent);
+    }
+    /* Prós e Contras */
+    .pros-cons {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .pc-box {
+      padding: 12px;
+      border-radius: var(--radius-md);
+      font-size: 12px;
+    }
+
+    .pc-pros {
+      background: #F0FDF4;
+      border: 1px solid #BBF7D0;
+    }
+
+    .pc-cons {
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+    }
+
+    .pc-box h4 {
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .pc-pros h4 { color: #166534; }
+    .pc-cons h4 { color: #991B1B; }
+
+    .pc-box ul {
+      padding-left: 16px;
+      line-height: 1.5;
+      color: #1E293B;
+    }
+
+    /* Preços e Histórico */
+    .price-history {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .ph-card {
+      background: var(--bg-subtle);
+      padding: 10px 6px;
+      border-radius: 10px;
+    }
+
+    .ph-card small {
+      display: block;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .ph-card strong {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .ph-card.best strong {
+      color: var(--accent-dark);
+    }
+
+    .store-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .store-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 11px 12px;
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      text-decoration: none;
+      color: var(--text-main);
+      transition: 0.2s;
+    }
+
+    .store-item:hover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .store-name { font-size: 12px; font-weight: 700; }
+    .store-tag { font-size: 10px; color: var(--accent-dark); font-weight: 600; }
+    .store-cta {
+      background: var(--accent);
+      color: #FFFFFF;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 6px 10px;
+      border-radius: 8px;
+    }
+    /* Área da Câmera / Foto */
+    .upload-zone {
+      background: #FFFFFF;
+      border: 2px dashed #94A3B8;
+      border-radius: var(--radius-lg);
+      padding: 28px 18px;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.2s;
+      margin-bottom: 14px;
+    }
+
+    .upload-zone:hover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .upload-icon { font-size: 40px; margin-bottom: 8px; }
+
+    .preview-img {
+      width: 100%;
+      max-height: 240px;
+      object-fit: cover;
+      border-radius: var(--radius-md);
+      margin-bottom: 12px;
+      display: none;
+    }
+
+    /* Quiz de Indicação */
+    .quiz-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+    }
+
+    .quiz-step-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent-dark);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .quiz-question {
+      font-size: 17px;
+      font-weight: 800;
+      margin-bottom: 14px;
+      color: var(--primary);
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .quiz-opt-btn {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      padding: 13px 14px;
+      border-radius: 12px;
+      text-align: left;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .quiz-opt-btn:hover {
+      background: var(--primary);
+      color: #FFFFFF;
+      border-color: var(--primary);
+    }
+
+    /* Filtros de Navegação */
+    .filter-group { margin-bottom: 12px; }
+    .filter-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+
+    .filter-select {
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #FFFFFF;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .primary-full-btn {
+      width: 100%;
+      background: var(--primary);
+      color: #FFFFFF;
+      border: none;
+      padding: 13px;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 6px;
+    }
+
+    /* Loader & Modal API */
+    .loader-box {
+      display: none;
+      text-align: center;
+      padding: 28px 16px;
+      background: #FFFFFF;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+
+    .spinner {
+      width: 34px;
+      height: 34px;
+      border: 4px solid #E2E8F0;
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 10px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      z-index: 50;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-box {
+      background: #FFFFFF;
+      width: 100%;
+      max-width: 400px;
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .modal-box h3 { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+    .modal-box p { font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px; }
+    .modal-box input {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+    /* Barra de Navegação Inferior Fixa */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      max-width: 480px;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 8px 4px 12px;
+      z-index: 30;
+    }
+
+    .nav-item {
+      background: none;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .nav-item span.icon { font-size: 19px; }
+    .nav-item.active { color: var(--accent-dark); }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Cabeçalho Fixo -->
+    <header class="app-header">
+      <div class="header-top">
+        <div class="brand">
+          <div class="brand-icon">👟</div>
+          <div class="brand-text">
+            <h1>PassoCerto</h1>
+            <span>Análise Técnica & Saúde</span>
+          </div>
+        </div>
+        <button class="api-btn" onclick="openApiModal()">
+          <span class="api-dot" id="apiDot"></span>
+          <span id="apiStatusText">Chave IA</span>
+        </button>
+      </div>
+
+      <div class="search-box">
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Ex: Nike Air Max 90, Asics Nimbus..."
+          onkeypress="if(event.key === 'Enter') searchShoeByName()"
+        />
+        <button class="search-btn" onclick="searchShoeByName()">Buscar</button>
+      </div>
+    </header>
+
+    <!-- Área Principal -->
+    <main class="content-area">
+      <!-- Loader Global -->
+      <div class="loader-box" id="globalLoader">
+        <div class="spinner"></div>
+        <strong style="font-size: 13px; color: var(--primary);" id="loaderText">
+          Analisando biomecânica e preços...
+        </strong>
+      </div>
+
+      <!-- ABA 1: INÍCIO / BUSCA -->
+      <section class="tab-section active" id="tab-home">
+        <div class="hero-card">
+          <div>
+            <h2>Não sabe qual escolher?</h2>
+            <p>Responda 4 perguntas rápidas e descubra o tênis ideal para seus joelhos e objetivo.</p>
+            <button class="hero-cta" onclick="switchTab('quiz')">O que me indica? →</button>
+          </div>
+          <div class="hero-emoji">🩺</div>
+        </div>
+
+        <div class="section-title">
+          <span>Buscas populares</span>
+        </div>
+        <div class="chips-row">
+          <button class="chip" onclick="quickSearch('Nike Air Max 90')">Nike Air Max 90</button>
+          <button class="chip" onclick="quickSearch('Asics Gel-Nimbus 26')">Asics Nimbus 26</button>
+          <button class="chip" onclick="quickSearch('Adidas Ultraboost Light')">Ultraboost</button>
+          <button class="chip" onclick="quickSearch('Olympikus Corre 3')">Olympikus Corre 3</button>
+          <button class="chip" onclick="quickSearch('Nike Pegasus 41')">Nike Pegasus 41</button>
+        </div>
+
+        <!-- Container onde a Ficha Técnica será exibida -->
+        <div id="resultContainer"></div>
+
+        <!-- Espaço Ilustrativo de Parceiros -->
+        <div class="ad-slot">
+          <div class="ad-info">
+            <span class="ad-badge">Parceiro • Espaço Ilustrativo</span>
+            <h4>Avaliação de Pisada Gratuita</h4>
+            <p>Conheça clínicas e lojas parceiras perto de você.</p>
+          </div>
+          <a href="#parceiro" class="ad-link" onclick="event.preventDefault(); alert('Espaço reservado para futuros anúncios de parceiros!')">Saiba mais</a>
+        </div>
+      </section>
+
+      <!-- ABA 2: BUSCA POR FOTO -->
+      <section class="tab-section" id="tab-camera">
+        <div class="section-title">
+          <span>Identificar Tênis por Foto</span>
+        </div>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">
+          Viu um tênis na rua ou na loja? Tire uma foto ou escolha da galeria para ver a ficha de saúde e os menores preços.
+        </p>
+
+        <label class="upload-zone" for="shoePhotoInput">
+          <div class="upload-icon">📸</div>
+          <strong style="display: block; font-size: 14px; color: var(--primary); margin-bottom: 4px;">
+            Tirar Foto ou Escolher Imagem
+          </strong>
+          <span style="font-size: 11px; color: var(--text-muted);">
+            Foque na lateral do tênis para maior precisão
+          </span>
+        </label>
+        <input
+          type="file"
+          id="shoePhotoInput"
+          accept="image/*"
+          capture="environment"
+          style="display: none;"
+          onchange="handlePhotoUpload(event)"
+        />
+
+        <img id="photoPreview" class="preview-img" alt="Prévia do tênis" />
+        <button class="primary-full-btn" id="analyzePhotoBtn" style="display: none; background: var(--accent);" onclick="analyzeShoePhoto()">
+          🔍 Analisar Tênis da Foto
+        </button>
+
+        <div id="photoFallbackBox" style="display: none; margin-top: 14px;"></div>
+      </section>
+      <!-- ABA 3: QUIZ "O QUE ME INDICA?" -->
+      <section class="tab-section" id="tab-quiz">
+        <div class="section-title">
+          <span>Consultor Inteligente</span>
+          <button style="background: none; border: none; color: var(--accent-dark); font-size: 11px; font-weight: 700; cursor: pointer;" onclick="resetQuiz()">
+            Recomeçar
+          </button>
+        </div>
+        <div class="quiz-card" id="quizContainer"></div>
+      </section>
+
+      <!-- ABA 4: EXPLORAR & FILTROS -->
+      <section class="tab-section" id="tab-filters">
+        <div class="section-title">
+          <span>Filtrar Catálogo</span>
+        </div>
+
+        <div class="result-card">
+          <div class="filter-group">
+            <label>Gênero</label>
+            <select class="filter-select" id="filterGender">
+              <option value="Masculino">Masculino</option>
+              <option value="Feminino">Feminino</option>
+              <option value="Unissex">Unissex</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Marca Preferida</label>
+            <select class="filter-select" id="filterBrand">
+              <option value="Qualquer marca">Todas as marcas</option>
+              <option value="Nike">Nike</option>
+              <option value="Adidas">Adidas</option>
+              <option value="Asics">Asics</option>
+              <option value="Olympikus">Olympikus</option>
+              <option value="Mizuno">Mizuno</option>
+              <option value="New Balance">New Balance</option>
+              <option value="Puma">Puma</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Numeração (BR)</label>
+            <select class="filter-select" id="filterSize">
+              <option value="37">37</option>
+              <option value="38">38</option>
+              <option value="39">39</option>
+              <option value="40" selected>40</option>
+              <option value="41">41</option>
+              <option value="42">42</option>
+              <option value="43">43</option>
+              <option value="44">44</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Categoria / Uso</label>
+            <select class="filter-select" id="filterCategory">
+              <option value="Corrida e Alta Absorção de Impacto">Corrida / Amortecimento</option>
+              <option value="Caminhada e Uso Diário Confortável">Caminhada / Dia a dia</option>
+              <option value="Academia, Musculação e Treino">Academia / Treino</option>
+              <option value="Chuteira Campo ou Society">Chuteira (Futebol)</option>
+              <option value="Basquete e Quadra">Basquete / Quadra</option>
+              <option value="Casual / Lifestyle">Casual / Estilo</option>
+            </select>
+          </div>
+
+          <button class="primary-full-btn" style="background: var(--accent);" onclick="searchByFilters()">
+            Encontrar Melhor Opção
+          </button>
+        </div>
+
+        <!-- Espaço Ilustrativo de Parceiros -->
+        <div class="ad-slot">
+          <div class="ad-info">
+            <span class="ad-badge">Oferta Patrocinada • Ilustrativo</span>
+            <h4>Cupom de 15% na Primeira Compra</h4>
+            <p>Válido para modelos selecionados de corrida.</p>
+          </div>
+          <a href="#cupom" class="ad-link" onclick="event.preventDefault(); alert('Espaço ilustrativo para cupom de parceiro!')">Ver cupom</a>
+        </div>
+      </section>
+    </main>
+
+    <!-- Barra de Navegação Inferior -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" id="nav-home" onclick="switchTab('home')">
+        <span class="icon">🔍</span>
+        <span>Buscar</span>
+      </button>
+      <button class="nav-item" id="nav-camera" onclick="switchTab('camera')">
+        <span class="icon">📸</span>
+        <span>Por Foto</span>
+      </button>
+      <button class="nav-item" id="nav-quiz" onclick="switchTab('quiz')">
+        <span class="icon">🩺</span>
+        <span>Indicação</span>
+      </button>
+      <button class="nav-item" id="nav-filters" onclick="switchTab('filters')">
+        <span class="icon">🎛️</span>
+        <span>Filtros</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Modal de Configuração da Chave API -->
+  <div class="modal-backdrop" id="apiModal">
+    <div class="modal-box">
+      <h3>🔑 Configurar Chave Gemini</h3>
+      <p>
+        Cole abaixo a sua chave gratuita gerada no <strong>Google AI Studio</strong>. Ela fica salva apenas na memória do seu navegador/celular com total segurança.
+      </p>
+      <input type="password" id="apiKeyInput" placeholder="Cole sua chave AQ.Ab8RN... aqui" />
+      <div class="modal-actions">
+        <button class="chip" onclick="closeApiModal()">Cancelar</button>
+        <button class="search-btn" style="padding: 9px 16px;" onclick="saveApiKey()">Salvar Chave</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    let GEMINI_API_KEY = localStorage.getItem('passocerto_gemini_key') || '';
+    let uploadedImageBase64 = null;
+    let uploadedImageMime = null;
+
+    // Atualiza indicador visual da chave API
+    function updateApiStatus() {
+      const dot = document.getElementById('apiDot');
+      const text = document.getElementById('apiStatusText');
+      if (GEMINI_API_KEY && GEMINI_API_KEY.trim().length > 10) {
+        dot.classList.add('active');
+        text.textContent = 'IA Ativa';
+      } else {
+        dot.classList.remove('active');
+        text.textContent = 'Configurar IA';
+      }
+    }
+
+    function openApiModal() {
+      document.getElementById('apiKeyInput').value = GEMINI_API_KEY;
+      document.getElementById('apiModal').style.display = 'flex';
+    }
+
+    function closeApiModal() {
+      document.getElementById('apiModal').style.display = 'none';
+    }
+
+    function saveApiKey() {
+      const val = document.getElementById('apiKeyInput').value.trim();
+      if (!val) {
+        alert('Por favor, cole uma chave válida.');
+        return;
+      }
+      GEMINI_API_KEY = val;
+      localStorage.setItem('passocerto_gemini_key', val);
+      updateApiStatus();
+      closeApiModal();
+      alert('Chave salva com sucesso! Agora você já pode buscar ou analisar fotos.');
+    }
+
+    // Troca entre as 4 abas do app
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+
+      document.getElementById(`tab-${tabName}`).classList.add('active');
+      document.getElementById(`nav-${tabName}`).classList.add('active');
+
+      if (tabName === 'quiz' && !document.getElementById('quizContainer').innerHTML.trim()) {
+        resetQuiz();
+      }
+    }
+
+    function setLoading(isLoading, message = 'Analisando biomecânica e preços...') {
+      const loader = document.getElementById('globalLoader');
+      document.getElementById('loaderText').textContent = message;
+      loader.style.display = isLoading ? 'block' : 'none';
+    }
+
+    function quickSearch(modelName) {
+      document.getElementById('searchInput').value = modelName;
+      searchShoeByName();
+    }
+
+    // ==========================================
+    // LÓGICA DO QUIZ "O QUE ME INDICA?"
+    // ==========================================
+    const quizSteps = [
+      {
+        key: 'uso',
+        question: 'Qual será o uso principal do tênis?',
+        options: ['Corrida de rua ou esteira', 'Caminhada longa e uso diário', 'Academia e musculação', 'Futebol (Campo ou Society)', 'Uso casual / estilo']
+      },
+      {
+        key: 'joelho',
+        question: 'Como você avalia o conforto e impacto nos joelhos?',
+        options: ['Tenho dor ou sensibilidade (preciso de máximo amortecimento)', 'Quero prevenção e maciez equilibrada', 'Prefiro solado mais firme e estável']
+      },
+      {
+        key: 'marca',
+        question: 'Tem preferência por alguma marca?',
+        options: ['Tanto faz, quero o melhor custo-benefício', 'Nike ou Adidas', 'Asics ou Mizuno', 'Olympikus ou New Balance']
+      },
+      {
+        key: 'cor',
+        question: 'Qual estilo de cor você prefere?',
+        options: ['Preto ou cores escuras discretas', 'Branco ou tons claros', 'Colorido / chamativo esportivo']
+      }
+    ];
+
+    let currentQuizStep = 0;
+    let quizAnswers = {};
+
+    function resetQuiz() {
+      currentQuizStep = 0;
+      quizAnswers = {};
+      renderQuizStep();
+    }
+
+    function renderQuizStep() {
+      const container = document.getElementById('quizContainer');
+      if (currentQuizStep >= quizSteps.length) {
+        const promptQuery = `Recomende o melhor modelo exato de tênis disponível no Brasil para: Uso=${quizAnswers.uso}, Saúde/Joelho=${quizAnswers.joelho}, Marca=${quizAnswers.marca}, Cor=${quizAnswers.cor}.`;
+        switchTab('home');
+        fetchShoeAnalysis(promptQuery, false);
+        return;
+      }
+
+      const step = quizSteps[currentQuizStep];
+      container.innerHTML = `
+        <div class="quiz-step-label">Pergunta ${currentQuizStep + 1} de ${quizSteps.length}</div>
+        <div class="quiz-question">${step.question}</div>
+        <div class="quiz-options">
+          ${step.options.map(opt => `
+            <button class="quiz-opt-btn" onclick="selectQuizOption('${step.key}', '${opt}')">${opt}</button>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function selectQuizOption(key, value) {
+      quizAnswers[key] = value;
+      currentQuizStep++;
+      renderQuizStep();
+    }
+
+    // Busca pelos Filtros Combinados
+    function searchByFilters() {
+      const gender = document.getElementById('filterGender').value;
+      const brand = document.getElementById('filterBrand').value;
+      const size = document.getElementById('filterSize').value;
+      const cat = document.getElementById('filterCategory').value;
+
+      const query = `Indique o melhor modelo exato de tênis ${gender}, marca ${brand}, tamanho BR ${size}, focado em ${cat}.`;
+      switchTab('home');
+      fetchShoeAnalysis(query, false);
+    }
+
+    function searchShoeByName() {
+      const input = document.getElementById('searchInput').value.trim();
+      if (!input) {
+        alert('Digite o nome de um tênis para pesquisar.');
+        return;
+      }
+      fetchShoeAnalysis(`Analise o tênis: ${input}`, false);
+    }
+    // ==========================================
+    // UPLOAD E LEITURA POR FOTO
+    // ==========================================
+    function handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      uploadedImageMime = file.type;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const preview = document.getElementById('photoPreview');
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+        document.getElementById('analyzePhotoBtn').style.display = 'block';
+        document.getElementById('photoFallbackBox').style.display = 'none';
+        uploadedImageBase64 = e.target.result.split(',')[1];
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function analyzeShoePhoto() {
+      if (!uploadedImageBase64) return;
+      fetchShoeAnalysis('Identifique com máxima precisão o modelo exato deste tênis na imagem.', true);
+    }
+
+    // ==========================================
+    // INTEGRAÇÃO COM A API DO GEMINI
+    // ==========================================
+    async function fetchShoeAnalysis(userPrompt, isImageMode) {
+      if (!GEMINI_API_KEY) {
+        alert('Configure primeiro a sua chave gratuita do Google AI Studio no botão superior direito!');
+        openApiModal();
+        return;
+      }
+
+      setLoading(true, isImageMode ? 'Identificando modelo pela foto...' : 'Gerando ficha de saúde e preços...');
+
+      const systemInstruction = `Você é um especialista sênior em biomecânica de calçados, ortopedia esportiva e mercado brasileiro de tênis.
+Responda ESTRITAMENTE em formato JSON válido, sem markdown e sem texto fora do JSON.
+Se for uma imagem e você NÃO conseguir identificar um tênis ou calçado com segurança, retorne apenas:
+{"encontrado": false}
+
+Se identificar o tênis (ou recomendar um modelo exato), retorne neste formato exato:
+{
+  "encontrado": true,
+  "marca": "Nome da marca",
+  "modelo": "Nome exato do modelo",
+  "categoria": "Ex: Corrida / Caminhada / Casual / Chuteira",
+  "material": "Resumo dos materiais do cabedal e entressola",
+  "pisada": "Neutra / Pronada / Supinada / Todas",
+  "amortecimento": "Macio / Equilibrado / Firme",
+  "status_joelho": "good ou warn ou bad",
+  "selo_joelho": "Ex: Excelente para os joelhos / Impacto moderado / Firme (mais impacto)",
+  "analise_saude": "Explicação clara de 2 a 3 frases sobre absorção de impacto, conforto articular, coluna e indicação de uso.",
+  "pros": ["Ponto positivo 1", "Ponto positivo 2", "Ponto positivo 3"],
+  "contras": ["Ponto negativo 1", "Ponto negativo 2"],
+  "preco_menor": "R$ 000",
+  "preco_medio": "R$ 000",
+  "preco_maior": "R$ 000"
+}`;
+
+      const parts = [{ text: `${systemInstruction}\n\nPedido do usuário: ${userPrompt}` }];
+      if (isImageMode && uploadedImageBase64) {
+        parts.push({
+          inline_data: {
+            mime_type: uploadedImageMime || 'image/jpeg',
+            data: uploadedImageBase64
+          }
+        });
+      }
+
+      try {
+        const response = await fetch(
+          `https://googleapis.com{encodeURIComponent(GEMINI_API_KEY)}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts }],
+              generationConfig: {
+                temperature: 0.2,
+                responseMimeType: 'application/json'
+              }
+            })
+          }
+        );
+
+        const data = await response.json();
+        setLoading(false);
+
+        if (data.error) {
+          alert(`Erro na API Gemini: ${data.error.message}`);
+          return;
+        }
+
+        const rawText = data.candidates[0].content.parts[0].text;
+        const parsed = JSON.parse(rawText);
+
+        // Plano B: Não reconheceu o tênis na foto -> cai no Quiz de Indicação
+        if (!parsed.encontrado) {
+          const fallback = document.getElementById('photoFallbackBox');
+          fallback.style.display = 'block';
+          fallback.innerHTML = `
+            <div class="result-card" style="border-color: #FCD34D; background: #FFFBEB;">
+              <h3 style="font-size: 15px; color: #92400E; margin-bottom: 6px;">Não foi possível encontrar esse modelo em específico</h3>
+              <p style="font-size: 12px; color: #78350F; line-height: 1.5; margin-bottom: 12px;">
+                A imagem pode estar distante ou sem detalhes suficientes. Vamos encontrar o modelo ideal respondendo o que você procura hoje!
+              </p>
+              <button class="primary-full-btn" style="background: #B45309;" onclick="switchTab('quiz'); resetQuiz();">
+                Iniciar Indicação Guiada →
+              </button>
+            </div>
+          `;
+          return;
+        }
+
+        switchTab('home');
+        renderShoeResult(parsed);
+
+      } catch (err) {
+        setLoading(false);
+        alert('Não foi possível concluir a análise. Verifique sua conexão ou chave API.');
+        console.error(err);
+      }
+    }
+
+    // ==========================================
+    // RENDERIZA A FICHA TÉCNICA E OS 3 MENORES PREÇOS
+    // ==========================================
+    function renderShoeResult(shoe) {
+      const container = document.getElementById('resultContainer');
+      const badgeClass = shoe.status_joelho === 'good' ? 'badge-good' : (shoe.status_joelho === 'bad' ? 'badge-bad' : 'badge-warn');
+      const queryEncoded = encodeURIComponent(`${shoe.marca} ${shoe.modelo}`);
+
+      container.innerHTML = `
+        <div class="result-card">
+          <div class="shoe-header">
+            <span class="shoe-brand-tag">${shoe.marca} • ${shoe.categoria}</span>
+            <h2>${shoe.modelo}</h2>
+            <div class="shoe-subtitle"><strong>Material:</strong> ${shoe.material}</div>
+          </div>
+
+          <div class="health-box">
+            <div class="health-header">
+              <span>🩺 Saúde & Biomecânica</span>
+              <span class="health-badge ${badgeClass}">${shoe.selo_joelho}</span>
+            </div>
+
+            <div class="metrics-grid">
+              <div class="metric-item">
+                <small>Tipo de Pisada</small>
+                <strong>${shoe.pisada}</strong>
+              </div>
+              <div class="metric-item">
+                <small>Amortecimento</small>
+                <strong>${shoe.amortecimento}</strong>
+              </div>
+            </div>
+
+            <div class="health-verdict">${shoe.analise_saude}</div>
+          </div>
+
+          <div class="pros-cons">
+            <div class="pc-box pc-pros">
+              <h4>✅ Pontos Positivos (Prós)</h4>
+              <ul>${shoe.pros.map(item => `<li>${item}</li>`).join('')}</ul>
+            </div>
+            <div class="pc-box pc-cons">
+              <h4>⚠️ Pontos de Atenção (Contras)</h4>
+              <ul>${shoe.contras.map(item => `<li>${item}</li>`).join('')}</ul>
+            </div>
+          </div>
+
+          <div class="section-title" style="margin-top: 14px;">
+            <span>📊 Histórico & Média de Preços</span>
+          </div>
+          <div class="price-history">
+            <div class="ph-card best">
+              <small>Menor Histórico</small>
+              <strong>${shoe.preco_menor}</strong>
+            </div>
+            <div class="ph-card">
+              <small>Preço Médio</small>
+              <strong>${shoe.preco_medio}</strong>
+            </div>
+            <div class="ph-card">
+              <small>Maior Valor</small>
+              <strong>${shoe.preco_maior}</strong>
+            </div>
+          </div>
+
+          <div class="section-title" style="margin-top: 14px;">
+            <span>🏷️ Buscar os 3 Menores Preços</span>
+          </div>
+          <div class="store-list">
+            <a class="store-item" href="https://google.com{queryEncoded}" target="_blank" rel="noopener">
+              <div>
+                <div class="store-name">1. Comparador Google Shopping</div>
+                <div class="store-tag">Ordenar pelo menor preço agora</div>
+              </div>
+              <span class="store-cta">Ver oferta →</span>
+            </a>
+            <a class="store-item" href="https://amazon.com.br{queryEncoded}&s=price-asc-rank" target="_blank" rel="noopener">
+              <div>
+                <div class="store-name">2. Amazon Brasil</div>
+                <div class="store-tag">Filtrado do menor para o maior valor</div>
+              </div>
+              <span class="store-cta">Ver oferta →</span>
+            </a>
+            <a class="store-item" href="https://netshoes.com.br{queryEncoded}&sort=lowest-price" target="_blank" rel="noopener">
+              <div>
+                <div class="store-name">3. Netshoes / Lojas Esportivas</div>
+                <div class="store-tag">Menor preço disponível no estoque</div>
+              </div>
+              <span class="store-cta">Ver oferta →</span>
+            </a>
+          </div>
+        </div>
+      `;
+    }
+
+    // Inicializa status da chave ao abrir o app
+    updateApiStatus();
+  </script>
+</body>
+</html>
