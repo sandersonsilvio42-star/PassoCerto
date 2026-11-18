@@ -4,43 +4,51 @@ export default async function handler(req, res) {
   }
 
   const { apiKey, requestBody } = req.body || {};
+  const finalKey = (process.env.GEMINI_API_KEY || apiKey || '').replace(/\s+/g, '');
 
-  if (!apiKey || !requestBody) {
+  if (!finalKey || !requestBody) {
     return res.status(400).json({ error: 'Chave API ou dados da consulta ausentes.' });
   }
 
-  try {
-    const cleanKey = apiKey.replace(/\s+/g, '');
+  const endpoints = [
+    'https://googleapis.com',
+    'https://googleapis.com',
+    'https://googleapis.com'
+  ];
 
-    // Se a chave começar com AQ. usa o endpoint Vertex AI Express; se for AIzaSy usa o AI Studio padrão
-    const endpointUrl = cleanKey.startsWith('AQ.')
-      ? `https://googleapis.com{encodeURIComponent(cleanKey)}`
-      : `https://googleapis.com{encodeURIComponent(cleanKey)}`;
+  let lastError = 'Falha desconhecida';
 
-    const googleResponse = await fetch(endpointUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestBody)
-    });
-
-    const rawResponseText = await googleResponse.text();
-
-    let data;
+  for (const url of endpoints) {
     try {
-      data = JSON.parse(rawResponseText);
-    } catch {
-      return res.status(502).json({
-        error: { message: `Resposta inesperada do Google (HTTP ${googleResponse.status}). Verifique se a chave AQ. está ativa no Google Cloud.` }
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': finalKey
+        },
+        body: JSON.stringify(requestBody)
       });
+
+      const rawText = await response.text();
+      let data;
+      try {
+        data = JSON.parse(rawText);
+      } catch {
+        lastError = `HTTP ${response.status} em ${url}`;
+        continue;
+      }
+
+      if (response.ok) {
+        return res.status(200).json(data);
+      }
+
+      lastError = data.error ? `${data.error.message} (HTTP ${response.status})` : `HTTP ${response.status}`;
+    } catch (err) {
+      lastError = err.cause ? `${err.message} (${err.cause.code || err.cause.message})` : err.message;
     }
-
-    return res.status(googleResponse.status).json(data);
-
-  } catch (err) {
-    return res.status(500).json({
-      error: { message: `Erro interno na ponte Vercel: ${err.message}` }
-    });
   }
+
+  return res.status(502).json({
+    error: { message: `Não foi possível conectar ao Google: ${lastError}` }
+  });
 }
