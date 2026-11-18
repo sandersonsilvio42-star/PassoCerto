@@ -12,19 +12,30 @@ export default async function handler(req, res) {
   try {
     const cleanKey = apiKey.replace(/\s+/g, '');
 
-    const googleResponse = await fetch(
-      'https://googleapis.com',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-goog-api-key': cleanKey
-        },
-        body: JSON.stringify(requestBody)
-      }
-    );
+    // Se a chave começar com AQ. usa o endpoint Vertex AI Express; se for AIzaSy usa o AI Studio padrão
+    const endpointUrl = cleanKey.startsWith('AQ.')
+      ? `https://googleapis.com{encodeURIComponent(cleanKey)}`
+      : `https://googleapis.com{encodeURIComponent(cleanKey)}`;
 
-    const data = await googleResponse.json();
+    const googleResponse = await fetch(endpointUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    const rawResponseText = await googleResponse.text();
+
+    let data;
+    try {
+      data = JSON.parse(rawResponseText);
+    } catch {
+      return res.status(502).json({
+        error: { message: `Resposta inesperada do Google (HTTP ${googleResponse.status}). Verifique se a chave AQ. está ativa no Google Cloud.` }
+      });
+    }
+
     return res.status(googleResponse.status).json(data);
 
   } catch (err) {
