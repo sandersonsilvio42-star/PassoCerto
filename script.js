@@ -314,20 +314,16 @@ Se identificar o tênis (ou recomendar um modelo exato), retorne neste formato e
     }
   };
 
-  const cleanKey = GEMINI_API_KEY.replace(/\s+/g, '');
-
   try {
-    const response = await fetch(
-      'https://googleapis.com',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-goog-api-key': cleanKey
-        },
-        body: JSON.stringify(requestBody)
-      }
-    );
+    const response = await fetch('/api/analisar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        apiKey: GEMINI_API_KEY,
+        requestBody: requestBody
+      })
+    });
+
 
     const data = await response.json();
     setLoading(false);
