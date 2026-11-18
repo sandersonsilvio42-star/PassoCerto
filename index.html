@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0F172A" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="PassoCerto" />
+  <title>PassoCerto • Inteligência em Calçados & Saúde</title>
+
+  <!-- Manifest PWA -->
+  <link rel="manifest" href='data:application/manifest+json,{"name":"PassoCerto","short_name":"PassoCerto","start_url":".","display":"standalone","background_color":"#F8FAFC","theme_color":"#0F172A","icons":[{"src":"https://flaticon.com","sizes":"512x512","type":"image/png"}]}' />
+
+  <!-- Fonte Moderna -->
+  <link rel="preconnect" href="https://googleapis.com" />
+  <link rel="preconnect" href="https://gstatic.com" crossorigin />
+  <link href="https://googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- CSS Externo -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Cabeçalho Fixo -->
+    <header class="app-header">
+      <div class="header-top">
+        <div class="brand">
+          <div class="brand-icon">👟</div>
+          <div class="brand-text">
+            <h1>PassoCerto</h1>
+            <span>Análise Técnica & Saúde</span>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button class="api-btn" onclick="openApiModal()">
+            <span class="api-dot" id="apiDot"></span>
+            <span id="apiStatusText">Chave IA</span>
+          </button>
+
+          <!-- Botão de 3 Risquinhos (Filtros) -->
+          <button class="menu-hamburger-btn" onclick="toggleFilterDrawer()" aria-label="Abrir filtros">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="search-box">
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Ex: Nike Air Max 90, Asics Nimbus..."
+          onkeypress="if(event.key === 'Enter') searchShoeByName()"
+        />
+        <button class="search-btn" onclick="searchShoeByName()">Buscar</button>
+      </div>
+    </header>
+    <!-- Área Principal -->
+    <main class="content-area">
+      <!-- Loader Global -->
+      <div class="loader-box" id="globalLoader">
+        <div class="spinner"></div>
+        <strong id="loaderText">Analisando biomecânica e preços...</strong>
+      </div>
+
+      <!-- ABA 1: INÍCIO / BUSCA -->
+      <section class="tab-section active" id="tab-home">
+        <div class="hero-card">
+          <div>
+            <h2>Não sabe qual escolher?</h2>
+            <p>Responda 4 perguntas rápidas e descubra o tênis ideal para seus joelhos e objetivo.</p>
+            <button class="hero-cta" onclick="switchTab('quiz')">O que me indica? →</button>
+          </div>
+          <div class="hero-emoji">🩺</div>
+        </div>
+
+        <div class="section-title">
+          <span>Buscas populares</span>
+        </div>
+        <div class="chips-row">
+          <button class="chip" onclick="quickSearch('Nike Air Max 90')">Nike Air Max 90</button>
+          <button class="chip" onclick="quickSearch('Asics Gel-Nimbus 26')">Asics Nimbus 26</button>
+          <button class="chip" onclick="quickSearch('Adidas Ultraboost Light')">Ultraboost</button>
+          <button class="chip" onclick="quickSearch('Olympikus Corre 3')">Olympikus Corre 3</button>
+          <button class="chip" onclick="quickSearch('Nike Pegasus 41')">Nike Pegasus 41</button>
+        </div>
+
+        <!-- Container da Ficha Técnica -->
+        <div id="resultContainer"></div>
+
+        <!-- Espaço Ilustrativo de Parceiros -->
+        <div class="ad-slot">
+          <div class="ad-info">
+            <span class="ad-badge">Parceiro • Espaço Ilustrativo</span>
+            <h4>Avaliação de Pisada Gratuita</h4>
+            <p>Conheça clínicas e lojas parceiras perto de você.</p>
+          </div>
+          <a href="#parceiro" class="ad-link" onclick="event.preventDefault(); alert('Espaço reservado para futuros anúncios de parceiros!')">Saiba mais</a>
+        </div>
+      </section>
+
+      <!-- ABA 2: CÂMERA AO VIVO / SCANNER DE TÊNIS -->
+      <section class="tab-section" id="tab-camera">
+        <div class="section-title">
+          <span>Scanner Visual de Tênis</span>
+        </div>
+        <p class="tab-desc">
+          Aponte a câmera para o tênis ou escolha uma imagem da galeria para ver a ficha completa de saúde e os menores preços.
+        </p>
+
+        <!-- Área da Câmera ao Vivo -->
+        <div class="camera-card">
+          <div class="camera-viewport" id="cameraViewport">
+            <video id="cameraVideo" autoplay playsinline></video>
+            <img id="photoPreview" class="preview-img" alt="Foto capturada" />
+            <canvas id="cameraCanvas" style="display: none;"></canvas>
+
+            <!-- Tela inicial antes de liberar a câmera -->
+            <div class="camera-placeholder" id="cameraPlaceholder">
+              <div class="scanner-icon-wrap">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7V5a2 2 0 0 1 2-2h2" />
+                  <path d="M17 3h2a2 2 0 0 1 2 2v2" />
+                  <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
+                  <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
+                  <circle cx="12" cy="12" r="3" />
+                  <line x1="7" y1="12" x2="17" y2="12" stroke-dasharray="2 2" />
+                </svg>
+              </div>
+              <strong>Câmera de Identificação</strong>
+              <span>Toque abaixo para permitir o acesso à câmera</span>
+            </div>
+          </div>
+
+          <!-- Botões de Controle da Câmera -->
+          <div class="camera-controls">
+            <button class="primary-full-btn" id="startCameraBtn" style="background: #0284C7;" onclick="startCamera()">
+              📷 Abrir Câmera Agora
+            </button>
+
+            <button class="primary-full-btn" id="capturePhotoBtn" style="display: none; background: var(--accent);" onclick="capturePhotoFromCamera()">
+              📸 Tirar Foto do Tênis
+            </button>
+
+            <button class="primary-full-btn" id="analyzePhotoBtn" style="display: none; background: var(--accent);" onclick="analyzeShoePhoto()">
+              🔍 Analisar Tênis Capturado
+            </button>
+
+            <button class="secondary-full-btn" id="retakePhotoBtn" style="display: none;" onclick="startCamera()">
+              🔄 Tirar Outra Foto
+            </button>
+
+            <label class="gallery-link-btn" for="shoePhotoInput">
+              🖼️ Ou escolher foto da galeria
+            </label>
+            <input type="file" id="shoePhotoInput" accept="image/*" style="display: none;" onchange="handleGalleryUpload(event)" />
+          </div>
+        </div>
+
+        <div id="photoFallbackBox" style="display: none; margin-top: 14px;"></div>
+      </section>
+      <!-- ABA 3: QUIZ "O QUE ME INDICA?" -->
+      <section class="tab-section" id="tab-quiz">
+        <div class="section-title">
+          <span>Consultor Inteligente</span>
+          <button class="text-action-btn" onclick="resetQuiz()">Recomeçar</button>
+        </div>
+        <div class="quiz-card" id="quizContainer"></div>
+      </section>
+    </main>
+
+    <!-- Barra de Navegação Inferior (3 Ícones Principais) -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" id="nav-home" onclick="switchTab('home')">
+        <span class="icon">🔍</span>
+        <span>Buscar</span>
+      </button>
+
+      <button class="nav-item" id="nav-camera" onclick="switchTab('camera')">
+        <span class="icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 7V5a2 2 0 0 1 2-2h2" />
+            <path d="M17 3h2a2 2 0 0 1 2 2v2" />
+            <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
+            <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        </span>
+        <span>Escanear</span>
+      </button>
+
+      <button class="nav-item" id="nav-quiz" onclick="switchTab('quiz')">
+        <span class="icon">🩺</span>
+        <span>Indicação</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Painel Suspenso / Lateral de Filtros (Menu 3 Risquinhos) -->
+  <div class="drawer-backdrop" id="filterDrawerBackdrop" onclick="toggleFilterDrawer()"></div>
+  <aside class="filter-drawer" id="filterDrawer">
+    <div class="drawer-header">
+      <h3>🎛️ Filtrar Catálogo</h3>
+      <button class="close-drawer-btn" onclick="toggleFilterDrawer()">✕</button>
+    </div>
+
+    <div class="filter-group">
+      <label>Gênero</label>
+      <select class="filter-select" id="filterGender">
+        <option value="Masculino">Masculino</option>
+        <option value="Feminino">Feminino</option>
+        <option value="Unissex">Unissex</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Marca Preferida</label>
+      <select class="filter-select" id="filterBrand">
+        <option value="Qualquer marca">Todas as marcas</option>
+        <option value="Nike">Nike</option>
+        <option value="Adidas">Adidas</option>
+        <option value="Asics">Asics</option>
+        <option value="Olympikus">Olympikus</option>
+        <option value="Mizuno">Mizuno</option>
+        <option value="New Balance">New Balance</option>
+        <option value="Puma">Puma</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Numeração (BR)</label>
+      <select class="filter-select" id="filterSize">
+        <option value="37">37</option>
+        <option value="38">38</option>
+        <option value="39">39</option>
+        <option value="40" selected>40</option>
+        <option value="41">41</option>
+        <option value="42">42</option>
+        <option value="43">43</option>
+        <option value="44">44</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Categoria / Uso</label>
+      <select class="filter-select" id="filterCategory">
+        <option value="Corrida e Alta Absorção de Impacto">Corrida / Amortecimento</option>
+        <option value="Caminhada e Uso Diário Confortável">Caminhada / Dia a dia</option>
+        <option value="Academia, Musculação e Treino">Academia / Treino</option>
+        <option value="Chuteira Campo ou Society">Chuteira (Futebol)</option>
+        <option value="Basquete e Quadra">Basquete / Quadra</option>
+        <option value="Casual / Lifestyle">Casual / Estilo</option>
+      </select>
+    </div>
+
+    <button class="primary-full-btn" style="background: var(--accent);" onclick="searchByFilters()">
+      Aplicar Filtros
+    </button>
+
+    <div class="ad-slot" style="margin-top: 18px;">
+      <div class="ad-info">
+        <span class="ad-badge">Parceiro • Ilustrativo</span>
+        <h4>Cupom 15% OFF</h4>
+        <p>Válido na primeira compra.</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Modal de Configuração da Chave API -->
+  <div class="modal-backdrop" id="apiModal">
+    <div class="modal-box">
+      <h3>🔑 Configurar Chave Gemini</h3>
+      <p>
+        Cole abaixo a sua chave gratuita gerada no <strong>Google AI Studio</strong>. Ela fica salva apenas na memória do seu navegador/celular.
+      </p>
+      <input type="password" id="apiKeyInput" placeholder="Cole sua chave AQ.Ab8RN... aqui" />
+      <div class="modal-actions">
+        <button class="chip" onclick="closeApiModal()">Cancelar</button>
+        <button class="search-btn" style="padding: 9px 16px;" onclick="saveApiKey()">Salvar Chave</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Externo -->
+  <script src="script.js"></script>
+</body>
+</html>
